@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyPlan — To-Do List &amp; Productivity App</title>
+    <meta name="description" content="EasyPlan is a lightweight to-do list and productivity app. Organize tasks by priority, category, and due date.">
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        if (window.tailwind) {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            brand: {
+                                50: '#EEF2FF',
+                                100: '#E0E7FF',
+                                500: '#6366F1',
+                                600: '#4F46E5',
+                                700: '#4338CA',
+                            }
+                        },
+                        fontFamily: {
+                            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="font-sans text-slate-800 antialiased h-full bg-slate-50 selection:bg-brand-100 selection:text-brand-700">
+
+    <!-- Main Container -->
+    <div id="appContainer" class="min-h-screen bg-slate-50 flex flex-col">
+
+        <div class="flex-1 flex overflow-hidden max-w-[1600px] w-full mx-auto">
+
+            <!-- Mobile Sidebar Backdrop -->
+            <div id="mobileBackdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity"></div>
+
+            <!-- A. LEFT SIDEBAR -->
+            <aside id="sidebar" aria-label="Main navigation" class="w-64 bg-white border-r border-slate-200/80 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out overflow-y-auto">
+                <div>
+                    <!-- Logo Header -->
+                    <div class="h-16 px-6 flex items-center justify-between border-b border-slate-100">
+                        <button id="logoBtn" data-view="dashboard" class="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="EasyPlan — go to Dashboard">
+                            <span class="w-8 h-8 rounded-[10px] bg-brand-600 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
+                                <i data-lucide="check-square" class="w-5 h-5"></i>
+                            </span>
+                            <span class="font-bold text-lg text-slate-900 tracking-tight">EasyPlan</span>
+                            <span class="text-[10px] font-semibold bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded border border-brand-100">PRO</span>
+                        </button>
+                        <button id="sidebarCloseBtn" aria-label="Close menu" class="lg:hidden text-slate-400 hover:text-slate-600 p-1 rounded-md">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Main Navigation Links -->
+                    <nav class="px-3 py-4 space-y-1" aria-label="Views">
+                        <div class="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu</div>
+                        <a href="#" data-view="dashboard" class="nav-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4 nav-icon"></i>
+                                <span>Dashboard</span>
+                            </span>
+                            <span id="navDashCount" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">0</span>
+                        </a>
+                        <a href="#" data-view="tasks" class="nav-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium bg-brand-50 text-brand-600 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 nav-icon"></i>
+                                <span>My Tasks</span>
+                            </span>
+                            <span id="navTaskCount" class="text-xs bg-brand-100/80 text-brand-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+                        </a>
+                        <a href="#" data-view="today" class="nav-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <i data-lucide="calendar" class="w-4 h-4 nav-icon"></i>
+                                <span>Today</span>
+                            </span>
+                            <span id="navTodayBadge" class="text-xs bg-amber-50 text-amber-700 border border-amber-200/60 px-1.5 py-0.5 rounded font-medium hidden">0 due</span>
+                        </a>
+                        <a href="#" data-view="upcoming" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <i data-lucide="clock" class="w-4 h-4 nav-icon"></i>
+                            <span>Upcoming</span>
+                        </a>
+                        <a href="#" data-view="completed" class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <i data-lucide="check-check" class="w-4 h-4 nav-icon"></i>
+                            <span>Completed</span>
+                        </a>
+                    </nav>
+
+                    <!-- Category Lists Section -->
+                    <nav class="px-3 py-3 border-t border-slate-100 space-y-1" aria-label="Categories">
+                        <div class="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <span>Lists</span>
+                        </div>
+                        <a href="#" data-category="Personal" class="category-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <span>Personal</span>
+                            </span>
+                            <span data-count="Personal" class="text-xs text-slate-400">0</span>
+                        </a>
+                        <a href="#" data-category="Work" class="category-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                                <span>Work</span>
+                            </span>
+                            <span data-count="Work" class="text-xs text-slate-400">0</span>
+                        </a>
+                        <a href="#" data-category="Study" class="category-item flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <span class="flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                                <span>Study</span>
+                            </span>
+                            <span data-count="Study" class="text-xs text-slate-400">0</span>
+                        </a>
+                        <a href="#" data-category="" class="category-item flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">
+                            <i data-lucide="x" class="w-3.5 h-3.5 nav-icon"></i>
+                            <span>Clear category</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Footer note -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
+                    <p class="text-[10px] text-slate-400 leading-relaxed flex items-start gap-1.5">
+                        <i data-lucide="hard-drive" class="w-3 h-3 mt-0.5 flex-shrink-0"></i>
+                        Tasks are saved locally in your browser.
+                    </p>
+                </div>
+            </aside>
+
+            <!-- B. MAIN CONTENT AREA -->
+            <main class="flex-1 overflow-y-auto bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+                <!-- Header Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <button id="menuBtn" aria-label="Open menu" aria-controls="sidebar" class="lg:hidden p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
+                        <div>
+                            <h1 id="greetingTitle" class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                                Good morning <span class="animate-bounce" aria-hidden="true">👋</span>
+                            </h1>
+                            <p id="greetingSub" class="text-sm text-slate-500 mt-0.5">Let's make today productive and organized.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button id="addTaskBtn" class="w-full sm:w-auto px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium text-sm shadow-sm shadow-brand-500/30 flex items-center justify-center gap-2 transition-all active:scale-95">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Add New Task</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <label for="searchInput" class="sr-only">Search tasks</label>
+                        <input type="search" id="searchInput" placeholder="Search your tasks by title, description, or category..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-800 placeholder-slate-400 shadow-sm transition-all">
+                    </div>
+                </div>
+
+                <!-- Summary Cards Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Card 1: Total -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-500">Total Tasks</span>
+                            <div class="p-2 bg-slate-100 rounded-xl text-slate-600">
+                                <i data-lucide="list-todo" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div id="statTotal" class="text-2xl font-bold text-slate-900 mt-2">0</div>
+                        <div id="statTotalSub" class="text-[11px] text-slate-400 mt-1">All tasks</div>
+                    </div>
+
+                    <!-- Card 2: Completed -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-500">Completed</span>
+                            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div id="statCompleted" class="text-2xl font-bold text-slate-900 mt-2">0</div>
+                        <div id="statCompletedSub" class="text-[11px] text-emerald-600 font-medium mt-1">0% completion rate</div>
+                    </div>
+
+                    <!-- Card 3: In Progress -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-500">In Progress</span>
+                            <div class="p-2 bg-brand-50 text-brand-600 rounded-xl">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div id="statInProgress" class="text-2xl font-bold text-slate-900 mt-2">0</div>
+                        <div class="text-[11px] text-slate-400 mt-1">Active items</div>
+                    </div>
+
+                    <!-- Card 4: Overdue -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-500">Overdue</span>
+                            <div class="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div id="statOverdue" class="text-2xl font-bold text-slate-900 mt-2">0</div>
+                        <div id="statOverdueSub" class="text-[11px] text-slate-400 mt-1">Nothing overdue</div>
+                    </div>
+                </div>
+
+                <!-- Tasks Main Section -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+
+                    <!-- Section Header with Filter Tabs -->
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <h2 id="sectionTitle" class="text-lg font-bold text-slate-900 tracking-tight">My Tasks</h2>
+                            <span id="activeCountBadge" class="bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
+                            <button id="clearCategoryChip" class="hidden items-center gap-1 text-xs font-medium text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-full hover:bg-brand-100 transition-colors">
+                                <span id="categoryChipLabel"></span>
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-start sm:self-auto overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                            <div class="bg-slate-100/80 p-1 rounded-xl flex items-center text-xs font-medium text-slate-600" role="group" aria-label="Filter tasks by status">
+                                <button data-status="all" id="filter-all" class="filter-tab px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition-all" aria-pressed="true">All</button>
+                                <button data-status="active" id="filter-active" class="filter-tab px-3 py-1.5 rounded-lg hover:text-slate-900 transition-all" aria-pressed="false">Active</button>
+                                <button data-status="completed" id="filter-completed" class="filter-tab px-3 py-1.5 rounded-lg hover:text-slate-900 transition-all" aria-pressed="false">Completed</button>
+                            </div>
+                            <div class="h-4 w-[1px] bg-slate-200" aria-hidden="true"></div>
+                            <label for="priorityFilter" class="sr-only">Filter by priority</label>
+                            <select id="priorityFilter" class="bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                <option value="all">All Priorities</option>
+                                <option value="High">High Priority</option>
+                                <option value="Medium">Medium Priority</option>
+                                <option value="Low">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tasks List Container -->
+                    <div id="taskList" class="divide-y divide-slate-100 min-h-[300px]" role="list" aria-label="Task list"></div>
+
+                    <!-- Empty State Placeholder -->
+                    <div id="emptyState" class="hidden py-16 px-4 text-center">
+                        <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                            <i data-lucide="check-check" class="w-8 h-8"></i>
+                        </div>
+                        <h3 id="emptyStateTitle" class="text-base font-semibold text-slate-900">All caught up!</h3>
+                        <p id="emptyStateText" class="text-sm text-slate-500 max-w-sm mx-auto mt-1">There are no tasks matching your current view or filter. Take a breath or create a new task.</p>
+                        <button id="emptyStateAddBtn" class="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-medium transition-all shadow-sm">
+                            + Create New Task
+                        </button>
+                    </div>
+
+                </div>
+
+            </main>
+
+            <!-- C. RIGHT SIDEBAR / PANEL -->
+            <aside id="rightPanel" aria-label="Progress and deadlines" class="w-80 bg-white border-l border-slate-200/80 p-6 hidden xl:block overflow-y-auto space-y-6">
+
+                <!-- Today's Progress Card -->
+                <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-5 text-center">
+                    <h3 class="text-sm font-bold text-slate-900">Today's Progress</h3>
+                    <p id="todayProgressSub" class="text-xs text-slate-500 mt-0.5">No tasks due today.</p>
+
+                    <!-- Circular Progress Indicator -->
+                    <div class="relative w-32 h-32 mx-auto my-4 flex items-center justify-center" role="img" aria-labelledby="todayProgressPct">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+                            <path class="text-slate-200" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path id="progressCircle" class="text-brand-600 transition-all duration-1000 ease-out" stroke-dasharray="0, 100" stroke-width="3.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center">
+                            <span id="todayProgressPct" class="text-2xl font-extrabold text-slate-900">0%</span>
+                            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Completed</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden mb-2" aria-hidden="true">
+                        <div id="progressBar" class="bg-brand-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <span id="todayProgressBadge" class="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Add tasks due today to track progress</span>
+                </div>
+
+                <!-- Upcoming Deadlines -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-900">Upcoming Deadlines</h3>
+                        <a href="#" id="viewAllDeadlines" class="text-xs font-semibold text-brand-600 hover:text-brand-700">View All</a>
+                    </div>
+                    <div id="upcomingList" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Productivity Tip Widget -->
+                <div class="p-4 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-xl" aria-hidden="true"></div>
+                    <div class="flex items-center gap-2 text-xs font-medium text-brand-200 mb-1">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-300"></i> Productivity Tip
+                    </div>
+                    <p id="tipText" class="text-xs leading-relaxed font-normal text-brand-50"></p>
+                </div>
+
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden transition-opacity" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div class="bg-white rounded-2xl max-w-sm w-full border border-slate-200 shadow-xl overflow-hidden">
+            <div class="p-6 text-center">
+                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-100">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+                <h3 id="confirmTitle" class="font-bold text-slate-900 text-base">Delete this task?</h3>
+                <p id="confirmText" class="text-sm text-slate-500 mt-1">This action cannot be undone.</p>
+                <div class="mt-5 flex items-center justify-center gap-3">
+                    <button type="button" id="confirmCancelBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirmDeleteBtn" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition-all">
+                        Delete Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK MODAL (Add / Edit) -->
+    <div id="taskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <div id="modalIcon" class="w-7 h-7 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-sm" aria-hidden="true">
+                        +
+                    </div>
+                    <h3 id="modalTitle" class="font-bold text-slate-900 text-base">Add New Task</h3>
+                </div>
+                <button type="button" id="modalCloseBtn" aria-label="Close dialog" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="taskForm" class="p-6 space-y-4 overflow-y-auto" novalidate>
+
+                <!-- Title Field -->
+                <div>
+                    <label for="taskTitleInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Task Title *</label>
+                    <input type="text" id="taskTitleInput" required maxlength="120" placeholder="e.g. Finish portfolio website design" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-800 placeholder-slate-400">
+                    <p id="titleError" class="hidden text-xs text-rose-600 mt-1.5">Please enter a task title.</p>
+                </div>
+
+                <!-- Description Field -->
+                <div>
+                    <label for="taskDescInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Description</label>
+                    <textarea id="taskDescInput" rows="3" maxlength="500" placeholder="Add short details, subtasks, or links..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-800 placeholder-slate-400 resize-none"></textarea>
+                </div>
+
+                <!-- Grid for Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                    <!-- Due Date Picker -->
+                    <div>
+                        <label for="taskDueDateInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Due Date</label>
+                        <input type="date" id="taskDueDateInput" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-700">
+                    </div>
+
+                    <!-- Priority Selector -->
+                    <div>
+                        <label for="taskPriorityInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Priority</label>
+                        <select id="taskPriorityInput" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-700 bg-white">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+
+                    <!-- Category Selector -->
+                    <div>
+                        <label for="taskCategoryInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Category</label>
+                        <select id="taskCategoryInput" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-slate-700 bg-white">
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Study">Study</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="modalCancelBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="modalSubmitBtn" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-sm shadow-brand-500/30 transition-all">
+                        Save Task
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

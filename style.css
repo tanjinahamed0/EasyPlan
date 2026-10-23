@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Custom scrollbar for modern subtle look */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+.custom-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 2px solid #CBD5E1;
+    border-radius: 6px;
+    outline: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    background: #fff;
+}
+
+.custom-checkbox:checked {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+}
+
+.custom-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-checkbox:focus-visible {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+/* Sidebar icon colors follow the active state */
+.nav-icon {
+    color: #64748b;
+}
+.nav-item.active .nav-icon,
+.category-item.active .nav-icon {
+    color: #4F46E5;
+}

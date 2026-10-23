@@ -1,0 +1,15 @@
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Dependencies / build artifacts (none currently, kept for safety)
+node_modules/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment / secrets
+.env
+.env.*
